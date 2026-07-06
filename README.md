@@ -75,6 +75,7 @@ supabase/
 └── migrations/   # migrations SQL do banco
 ```
 
-## 📌 Status
+## 📌 Autora
 
-Projeto pessoal em desenvolvimento (MVP), sem licença definida ainda.
+**Maikelen Salles**
+[maikelen-dev.web.app](https://maikelen-dev.web.app/)
