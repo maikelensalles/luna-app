@@ -1,0 +1,35 @@
+export const theme = {
+  colors: {
+    background: '#14121F',
+    backgroundElevated: '#1E1A30',
+    accent: '#A99BF5',
+    accentBorder: '#332C55',
+    sage: '#8FBFA3',
+    sand: '#F3EFE7',
+    gold: '#E3B873',
+    silver: '#C7C7D1',
+    silverMuted: '#7A7686',
+    danger: '#E05263',
+    textPrimary: '#F5F3F7',
+    textSecondary: '#B7B0C4',
+  },
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+  },
+  radii: {
+    sm: 8,
+    md: 16,
+    lg: 24,
+    pill: 999,
+  },
+  typography: {
+    heading: { fontSize: 24, fontFamily: 'Nunito_800ExtraBold' },
+    subheading: { fontSize: 18, fontFamily: 'Nunito_600SemiBold' },
+    body: { fontSize: 16, fontFamily: 'Nunito_400Regular' },
+    caption: { fontSize: 13, fontFamily: 'Nunito_400Regular' },
+  },
+};
