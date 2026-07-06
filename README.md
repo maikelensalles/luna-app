@@ -1,6 +1,6 @@
 # Luna
 
-Meditação, yoga e presença — um app de bem-estar pessoal, sem misticismo.
+Meditação, yoga e presença — um app de bem-estar pessoal.
 
 <table>
   <tr>
@@ -28,7 +28,7 @@ A proposta é ser um MVP pessoal: enxuto, direto, sem dependência de conteúdo 
 ## 🛠️ Stack técnica
 
 - **React Native + Expo** (Expo Router, TypeScript)
-- **Supabase** — banco de dados, autenticação e storage de avatares
+- **Postgres** — banco de dados, autenticação e storage de avatares
 - **StyleSheet nativo** — sem NativeWind ou outra lib de estilo
 - **react-native-svg** — desenho da trilha da Jornada
 - **Fontes**: Nunito, via `@expo-google-fonts/nunito`
