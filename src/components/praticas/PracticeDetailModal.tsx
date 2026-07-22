@@ -1,8 +1,11 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import { LunaButton } from '../ui/LunaButton';
 import { theme } from '../../constants/theme';
+import { getEmbedUrl } from '../../utils/videoEmbed';
 import type { PracticeItem } from '../../types/database';
+import { Platform } from 'react-native';
 
 type PracticeDetailModalProps = {
   practice: PracticeItem | null;
@@ -24,6 +27,11 @@ export function PracticeDetailModal({
   if (!practice) {
     return null;
   }
+
+  const embedUrl = practice.videoUrl ? getEmbedUrl(practice.videoUrl) : null;
+
+  console.log('DEBUG practice.videoUrl:', practice?.videoUrl);
+  console.log('DEBUG embedUrl:', embedUrl);
 
   async function handleAdd() {
     await onAddPractice(practice!.id);
@@ -47,6 +55,48 @@ export function PracticeDetailModal({
           <Text style={styles.description}>
             {practice.description ?? `Uma prática de ${practice.category} para o seu dia.`}
           </Text>
+          {embedUrl && (
+            <View style={{ width: '100%', height: 220, marginTop: 16, borderRadius: 12, overflow: 'hidden', backgroundColor: '#000' }}>
+              {Platform.OS === 'web' ? (
+                <iframe
+                  src={embedUrl}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <WebView
+                source={{
+                  html: `
+                    <!DOCTYPE html>
+                    <html>
+                      <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                        <style>
+                          body { margin: 0; padding: 0; background-color: #000; overflow: hidden; }
+                          iframe { width: 100vw; height: 100vh; border: none; }
+                        </style>
+                      </head>
+                      <body>
+                        <iframe 
+                          src="${embedUrl}&origin=https://luna-app.com" 
+                          allow="autoplay; fullscreen; encrypted-media" 
+                          allowfullscreen>
+                        </iframe>
+                      </body>
+                    </html>
+                  `,
+                  baseUrl: 'https://luna-app.com' // <-- Enganamos o YouTube com um domínio "terceiro"
+                }}
+                style={{ flex: 1, backgroundColor: '#000' }}
+                allowsInlineMediaPlayback={true}
+                mediaPlaybackRequiresUserAction={false}
+                scrollEnabled={false}
+                bounces={false}
+              />
+              )}
+            </View>
+          )}
           {isInToday ? (
             <LunaButton label="Remover da Jornada" variant="ghost" onPress={handleRemove} />
           ) : (
@@ -85,6 +135,13 @@ const styles = StyleSheet.create({
   description: {
     ...theme.typography.body,
     color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.lg,
+  },
+  video: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.background,
     marginBottom: theme.spacing.lg,
   },
 });

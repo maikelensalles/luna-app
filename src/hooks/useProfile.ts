@@ -9,9 +9,20 @@ type ProfileRow = {
   display_name: string | null;
   avatar_url: string | null;
   updated_at: string;
+  reminder_enabled: boolean;
+  reminder_time: string;
+  quote_notification_enabled: boolean;
+  quote_notification_time: string;
 };
 
 type MutationResult = { error: string | null };
+
+type NotificationSettings = Partial<{
+  reminderEnabled: boolean;
+  reminderTime: string;
+  quoteNotificationEnabled: boolean;
+  quoteNotificationTime: string;
+}>;
 
 function toProfile(row: ProfileRow): Profile {
   return {
@@ -19,6 +30,10 @@ function toProfile(row: ProfileRow): Profile {
     displayName: row.display_name,
     avatarUrl: row.avatar_url,
     updatedAt: row.updated_at,
+    reminderEnabled: row.reminder_enabled,
+    reminderTime: row.reminder_time,
+    quoteNotificationEnabled: row.quote_notification_enabled,
+    quoteNotificationTime: row.quote_notification_time,
   };
 }
 
@@ -28,6 +43,7 @@ export function useProfile(): {
   error: string | null;
   updateDisplayName: (name: string) => Promise<MutationResult>;
   uploadAvatar: () => Promise<MutationResult>;
+  updateNotificationSettings: (settings: NotificationSettings) => Promise<MutationResult>;
 } {
   const { session } = useSession();
   const userId = session?.user.id;
@@ -112,6 +128,35 @@ export function useProfile(): {
     [userId],
   );
 
+  const updateNotificationSettings = useCallback(
+    async (settings: NotificationSettings): Promise<MutationResult> => {
+      if (!userId) return { error: 'Sessão inválida.' };
+
+      const updatedAt = new Date().toISOString();
+      const payload: Record<string, unknown> = { updated_at: updatedAt };
+      if (settings.reminderEnabled !== undefined) payload.reminder_enabled = settings.reminderEnabled;
+      if (settings.reminderTime !== undefined) payload.reminder_time = settings.reminderTime;
+      if (settings.quoteNotificationEnabled !== undefined) {
+        payload.quote_notification_enabled = settings.quoteNotificationEnabled;
+      }
+      if (settings.quoteNotificationTime !== undefined) {
+        payload.quote_notification_time = settings.quoteNotificationTime;
+      }
+
+      const { error: updateError } = await supabase.from('profiles').update(payload).eq('id', userId);
+
+      if (updateError) {
+        setError(updateError.message);
+        return { error: updateError.message };
+      }
+
+      setError(null);
+      setProfile((current) => (current ? { ...current, ...settings, updatedAt } : current));
+      return { error: null };
+    },
+    [userId],
+  );
+
   const uploadAvatar = useCallback(async (): Promise<MutationResult> => {
     if (!userId) return { error: 'Sessão inválida.' };
 
@@ -164,5 +209,5 @@ export function useProfile(): {
     return { error: null };
   }, [userId]);
 
-  return { profile, isLoading, error, updateDisplayName, uploadAvatar };
+  return { profile, isLoading, error, updateDisplayName, uploadAvatar, updateNotificationSettings };
 }

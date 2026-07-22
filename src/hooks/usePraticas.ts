@@ -9,6 +9,7 @@ function toPracticeItem(row: Practice): PracticeItem {
     category: row.category,
     durationMinutes: row.duration_minutes,
     description: row.description,
+    videoUrl: row.video_url,
   };
 }
 

@@ -7,6 +7,7 @@ export type Practice = {
   duration_minutes: number;
   description: string | null;
   audio_url: string | null;
+  video_url: string | null;
   created_at: string;
 };
 
@@ -39,6 +40,7 @@ export type PracticeItem = {
   category: PracticeCategory;
   durationMinutes: number;
   description: string | null;
+  videoUrl: string | null;
 };
 
 export type JornadaCheckIn = {
@@ -60,6 +62,10 @@ export type Profile = {
   displayName: string | null;
   avatarUrl: string | null;
   updatedAt: string;
+  reminderEnabled: boolean;
+  reminderTime: string;
+  quoteNotificationEnabled: boolean;
+  quoteNotificationTime: string;
 };
 
 export type DailyPracticeItem = {

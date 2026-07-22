@@ -1,31 +1,46 @@
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRef } from 'react';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import ViewShot from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { LunaButton } from '../../components/ui/LunaButton';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { MoonPhaseCard } from '../../components/ui/MoonPhaseCard';
+import { StoryShareCard } from '../../components/hoje/StoryShareCard';
 import { useQuotes } from '../../hooks/useQuotes';
 import { useJornadaProgress } from '../../hooks/useJornadaProgress';
+import { getQuoteOfDay } from '../../utils/quoteOfDay';
 import { theme } from '../../constants/theme';
-
-function getDayOfYear(date: Date): number {
-  const start = new Date(date.getFullYear(), 0, 0);
-  const diffMs = date.getTime() - start.getTime();
-  return Math.floor(diffMs / 86_400_000);
-}
 
 export default function HojeScreen() {
   const router = useRouter();
   const { quotes, isLoading: isQuotesLoading } = useQuotes();
   const { week, todayCompleted, isLoading: isJornadaLoading } = useJornadaProgress();
+  const storyCardRef = useRef<ViewShot>(null);
 
   if (isQuotesLoading || isJornadaLoading) {
     return <LoadingSpinner />;
   }
 
   const completedCount = week.filter((day) => day.completed).length;
-  const quoteOfTheDay = quotes.length > 0 ? quotes[getDayOfYear(new Date()) % quotes.length] : null;
+  const quoteOfTheDay = getQuoteOfDay(quotes);
+
+  async function handleShareQuote() {
+    if (!quoteOfTheDay) return;
+    try {
+      const uri = await storyCardRef.current?.capture?.();
+      if (!uri) return;
+
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) return;
+
+      await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Compartilhar frase do dia' });
+    } catch {
+      // captura/compartilhamento falhou (ex. simulador sem suporte) — não quebra a tela
+    }
+  }
 
   return (
     <ScreenContainer>
@@ -41,6 +56,9 @@ export default function HojeScreen() {
         {quoteOfTheDay && (
           <View style={styles.card}>
             <Ionicons name="sparkles-outline" size={20} color={theme.colors.gold} />
+            <Pressable style={styles.shareButton} onPress={handleShareQuote} hitSlop={8}>
+              <Ionicons name="share-outline" size={18} color={theme.colors.textSecondary} />
+            </Pressable>
             <Text style={styles.quoteText}>“{quoteOfTheDay.text}”</Text>
             <Text style={styles.quoteCategory}>{quoteOfTheDay.category}</Text>
           </View>
@@ -54,6 +72,14 @@ export default function HojeScreen() {
           )}
         </View>
       </ScrollView>
+
+      {quoteOfTheDay && (
+        <View style={styles.offscreenCapture} pointerEvents="none">
+          <ViewShot ref={storyCardRef} options={{ format: 'png', quality: 1 }}>
+            <StoryShareCard quote={quoteOfTheDay.text} category={quoteOfTheDay.category} />
+          </ViewShot>
+        </View>
+      )}
     </ScreenContainer>
   );
 }
@@ -79,6 +105,18 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accentBorder,
     padding: theme.spacing.lg,
     marginBottom: theme.spacing.md,
+  },
+  shareButton: {
+    position: 'absolute',
+    top: theme.spacing.md,
+    right: theme.spacing.md,
+  },
+  offscreenCapture: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    opacity: 0,
+    zIndex: -1,
   },
   cardTitle: {
     ...theme.typography.subheading,

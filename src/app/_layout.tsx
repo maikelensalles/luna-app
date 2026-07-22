@@ -10,6 +10,7 @@ import {
 } from '@expo-google-fonts/nunito';
 import { SessionProvider, useSession } from '../contexts/SessionContext';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { useDailyNotifications } from '../hooks/useDailyNotifications';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,6 +21,7 @@ function RootNavigator() {
     Nunito_600SemiBold,
     Nunito_800ExtraBold,
   });
+  useDailyNotifications();
 
   const fontsReady = fontsLoaded || !!fontError;
   const isLoading = isSessionLoading || !fontsReady;
